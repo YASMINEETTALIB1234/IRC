@@ -1,4 +1,5 @@
 #include "../include/Server.hpp"
+#include "../include/Parser.hpp"
 
 Server::Server(int port, const std::string &password)
     : port(port),
@@ -6,6 +7,7 @@ Server::Server(int port, const std::string &password)
       serverFd(-1) //Mais avant d'appeler : socket() on ne possède aucun FD.
 {
 }
+
 Server::~Server()
 {
     if (serverFd != -1) //Lorsque ton programme quitte :CTRL+C ou return 0; il faut fermer la socket. Sinon le système garde la ressource ouverte.
@@ -100,6 +102,94 @@ void Server::initServer()
         PASS ?
 */
 
+void Server::handlePass(Client &client, const std::vector<std::string> &arguments)
+{
+    /*
+        Pourquoi passer Client &client par référence (&) ?
+        Très bonne question pour anticiper.
+        Si on écrivait :
+        void handlePass(Client client)
+        on travaillerait sur une copie du client.
+        Donc :
+        client.setAuthenticated(true);
+        modifierait seulement la copie.
+        Le vrai client dans la map resterait :
+        authenticated = false
+        En utilisant :
+        Client &client
+        on modifie directement l'objet stocké dans :
+        clients[clientFd]
+        C'est exactement ce qu'on veut
+
+
+        À quoi sert send() ?
+        Tu connais déjà :
+        recv()
+        ↓
+        Client --------> Serveur
+        Maintenant :
+        send()
+        fait l'inverse :
+        Serveur --------> Client
+        Sa syntaxe
+        send(
+            client.getFd(),
+            message.c_str(),
+            message.length(),
+            0
+        );
+        Comme recv() :
+        recv(fd, buffer, sizeof(buffer), 0);
+        mais dans l'autre sens.
+        Pourquoi message.c_str() ?
+        Tu sais que :
+        std::string message = "Welcome";
+        est un objet C++.
+        Mais :
+        send()
+        vient du langage C.
+        Il ne connaît pas std::string.
+        Il veut un :
+        const char *
+        Donc :
+        message.c_str()
+        transforme :
+        std::string
+        ↓
+        const char *
+        
+        Pourquoi message.length() ?
+        Parce que send() ne sait pas où la chaîne se termine.
+        Il faut lui dire :
+        Combien d'octets dois-je envoyer ?
+        Donc :
+        message.length()
+
+        Pourquoi \r\n et pas seulement \n ?
+        En IRC, toutes les lignes se terminent par :
+        \r\n
+        Ce n'est pas un choix, c'est une règle du protocole IRC (RFC 1459 / RFC 2812).
+    */
+
+    if (arguments.empty())
+    {
+        std::string reply = ":ircserv 461 * PASS :Not enough parameters\r\n";
+        send(client.getFd(), reply.c_str(), reply.length(), 0);
+        return;
+    }
+
+    if (arguments[0] == password)
+    {
+        client.setAuthenticated(true);
+        std::cout << "Client authenticated successfully." << std::endl;
+    }
+    else
+    {
+        std::string reply =":ircserv 464 * :Password incorrect\r\n";
+        send(client.getFd(), reply.c_str(), reply.length(), 0);
+        return;
+    }
+}
 
 void Server::run()
 {
@@ -284,17 +374,26 @@ void Server::run()
                     }
                     else
                     {
-                        buffer[bytes] = '\0';
+                        /*buffer[bytes] = '\0';
 
                         std::cout << "Received : "
                                   << buffer
-                                  << std::endl;
+                                  << std::endl;*/
+                        buffer[bytes] = '\0';
+
+                        Parser parser;
+                        parser.parse(buffer);
+
+                        std::vector<std::string> arguments = parser.getArguments();
+                        if (parser.getCommand() == "PASS")
+                            handlePass(client, arguments);
                     }
                 }
             }
         }
     }
 }
+
 
 /*
     Quand un message arrive :
@@ -304,4 +403,27 @@ void Server::run()
     Comment retrouver l'objet Client correspondant ?
     C'est exactement pour cela qu'on utilise :
     std::map<int, Client> _clients
+*/
+
+/*
+    Client (nc)
+        │
+        ▼
+    PASS password
+        │
+        ▼
+    recv()
+        │
+        ▼
+    buffer = "PASS password"
+        │
+        ▼
+    Parser::parse()
+        │
+        ▼
+    command = "PASS"
+    arguments[0] = "password"
+        │
+        ▼
+    Affichage
 */

@@ -34,6 +34,8 @@ public:
     void initServer();
     void run();
 
+    void handlePass(Client &client, const std::vector<std::string> &arguments);
+
     //void acceptClient();
     //void receiveMessage(int clientFd);
 };
