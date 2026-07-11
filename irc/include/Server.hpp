@@ -13,8 +13,10 @@
 #include <arpa/inet.h>//Elle contient les fonctions liées aux adresses IP(inet_addr(), inet_ntoa())
 
 #include <unistd.h>//close()
+#include <cctype>
 
 #include "Client.hpp"
+#include "../include/Parser.hpp"
 
 class Server
 {
@@ -35,6 +37,14 @@ public:
     void run();
 
     void handlePass(Client &client, const std::vector<std::string> &arguments);
+    void handleNick(Client &client, const std::vector<std::string> &arguments);
+    bool isValidNickname(const std::string &nickname);
+    std::string getClientName(Client &client);
+
+    void handleUser(Client &client, const std::vector<std::string> &arguments);
+
+    bool isRegistered(Client &client);
+    void sendWelcome(Client &client);
 
     //void acceptClient();
     //void receiveMessage(int clientFd);

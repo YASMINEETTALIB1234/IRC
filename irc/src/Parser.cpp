@@ -113,21 +113,55 @@ void Parser::clear()
     (rien)
 */
 
-void Parser::parse(const std::string &message)//message comme "NICK yasmine" etc
+// void Parser::parse(const std::string &message)//message comme "NICK yasmine" etc
+// {
+//     // Réinitialiser le parser avant une nouvelle commande
+//     clear();
+
+//     std::stringstream ss(message);//Transforme cette chaîne de caractères en un flux, comme std::cin
+//     std::string word;
+
+//     // Lire la commande (PASS, NICK, USER...)
+//     if (!(ss >> command))//(ss >> command qui retourne l'etat du stream) Lire le prochain mot du stream et le mettre dans command.
+//         return;
+
+//     // Lire tous les arguments jusqu'a la fin
+//     while (ss >> word)
+//     {
+//         arguments.push_back(word);
+//     }
+// }
+
+void Parser::parse(const std::string &message)
 {
-    // Réinitialiser le parser avant une nouvelle commande
     clear();
 
-    std::stringstream ss(message);//Transforme cette chaîne de caractères en un flux, comme std::cin
+    std::stringstream ss(message);
     std::string word;
 
-    // Lire la commande (PASS, NICK, USER...)
-    if (!(ss >> command))//(ss >> command qui retourne l'etat du stream) Lire le prochain mot du stream et le mettre dans command.
+    // Lire la commande
+    if (!(ss >> command))
         return;
 
-    // Lire tous les arguments jusqu'a la fin
+    // Lire les paramètres
     while (ss >> word)
     {
+        // Si le paramètre commence par ':'
+        if (word[0] == ':')
+        {
+            // Enlever ':'
+            word.erase(0, 1);
+
+            std::string rest;
+            std::getline(ss, rest);
+
+            word += rest;
+
+            arguments.push_back(word);
+
+            break;
+        }
+
         arguments.push_back(word);
     }
 }
