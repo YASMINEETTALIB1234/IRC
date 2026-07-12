@@ -1,15 +1,16 @@
 #include "../include/Server.hpp"
 
+//serverFd(-1) : Mais avant d'appeler : socket() on ne possède aucun FD.
 Server::Server(int port, const std::string &password)
     : port(port),
       password(password),
-      serverFd(-1) //Mais avant d'appeler : socket() on ne possède aucun FD.
+      serverFd(-1)
 {
 }
-
+//if (serverFd != -1) : Lorsque ton programme quitte :CTRL+C ou return 0; il faut fermer la socket. Sinon le système garde la ressource ouverte.
 Server::~Server()
 {
-    if (serverFd != -1) //Lorsque ton programme quitte :CTRL+C ou return 0; il faut fermer la socket. Sinon le système garde la ressource ouverte.
+    if (serverFd != -1)
         close(serverFd);
 }
 
@@ -170,15 +171,17 @@ void Server::handlePass(Client &client, const std::vector<std::string> &argument
         Ce n'est pas un choix, c'est une règle du protocole IRC (RFC 1459 / RFC 2812).
     */
 
-    if (client.isAuthenticated())
+    if (isRegistered(client))
     {
         std::string reply = ":ircserv 462 " + getClientName(client) + " :You may not reregister\r\n";
+
         send(
             client.getFd(),
             reply.c_str(),
             reply.length(),
             0
         );
+
         return;
     }
 
@@ -196,6 +199,7 @@ void Server::handlePass(Client &client, const std::vector<std::string> &argument
     }
     else
     {
+        client.setAuthenticated(false); 
         std::string reply =":ircserv 464 * :Password incorrect\r\n";
         send(client.getFd(), reply.c_str(), reply.length(), 0);
         return;
@@ -586,7 +590,6 @@ bool Server::isRegistered(Client &client)
 
 void Server::handleUser(Client &client, const std::vector<std::string> &arguments)
 {
-    // USER <username> <hostname> <servername> :<realname>
     if (!client.isAuthenticated())
     {
         std::string reply =
@@ -603,6 +606,7 @@ void Server::handleUser(Client &client, const std::vector<std::string> &argument
         return;
     }
 
+    // USER <username> <hostname> <servername> :<realname>
     if (!client.getUsername().empty())
     {
         std::string reply = ":ircserv 462 " + getClientName(client) + " :You may not reregister\r\n";
@@ -832,11 +836,6 @@ void Server::run()
                     }
                     else
                     {
-                        /*buffer[bytes] = '\0';
-
-                        std::cout << "Received : "
-                                  << buffer
-                                  << std::endl;*/
                         buffer[bytes] = '\0';
 
                         Parser parser;
@@ -849,6 +848,16 @@ void Server::run()
                             handleNick(client, arguments);
                         else if (parser.getCommand() == "USER")
                             handleUser(client, arguments);
+                        else
+                        {
+                            std::string reply = ":ircserv 421 " + parser.getCommand() + " :Unknown command\r\n";
+                            send(
+                                client.getFd(),
+                                reply.c_str(),
+                                reply.length(),
+                                0
+                            );
+                        }
                     }
                 }
             }
