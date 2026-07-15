@@ -40,6 +40,7 @@ public:
     bool isOperator(Client *client) const;//Vérifier si quelqu'un est opérateur (dans topic ,mode..)
     void setTopic(const std::string &topic);
     std::vector<Client*> &getOperators();
+
 };
 
 #endif

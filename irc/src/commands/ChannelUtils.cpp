@@ -1,5 +1,4 @@
-#include "../../include/commands/ChannelUtils.hpp"
-
+#include "../../include/Server.hpp"
 #include <sstream>
 #include <sys/socket.h>
 
@@ -10,7 +9,7 @@
 // Coupe une chaine du type "a,b,c" en {"a", "b", "c"}
 // Contrairement a la lecture par stringstream classique (qui coupe sur les
 // espaces), ici on coupe sur un caractere precis (typiquement ',').
-std::vector<std::string> ChannelUtils::split(const std::string &str, char delimiter)
+std::vector<std::string> Server::split(const std::string &str, char delimiter)
 {
     std::vector<std::string> tokens;
     std::stringstream ss(str);
@@ -36,7 +35,7 @@ std::vector<std::string> ChannelUtils::split(const std::string &str, char delimi
 // - commence par '#', '&', '+' ou '!'
 // - ne contient ni espace, ni virgule, ni le caractere BELL (0x07)
 // - a une longueur raisonnable (<= 50 caracteres)
-bool ChannelUtils::isValidChannelName(const std::string &name)
+bool Server::isValidChannelName(const std::string &name)
 {
     if (name.empty() || name.size() > 50)
         return false;
@@ -66,33 +65,33 @@ bool ChannelUtils::isValidChannelName(const std::string &name)
 // Channel
 // ============================================================
 
-Channel *ChannelUtils::findChannel(Server &server, const std::string &name)
+Channel *Server::findChannel(const std::string &name)
 {
-    std::map<std::string, Channel>::iterator it = server.getChannels().find(name);
+    std::map<std::string, Channel>::iterator it = channels.find(name);
 
-    if (it == server.getChannels().end())
+    if (it == channels.end())
         return NULL;
 
     return &(it->second);
 }
 
-Channel *ChannelUtils::createChannel(Server &server, const std::string &name)
+Channel *Server::createChannel(const std::string &name)
 {
-    server.getChannels()[name] = Channel(name);
-    return &(server.getChannels()[name]);
+    channels[name] = Channel(name);
+    return &channels[name];
 }
 
 // A appeler AVANT d'ajouter le nouveau membre au channel :
 // si le channel n'a encore aucun membre, celui qui rejoint sera le premier
 // (et donc, par convention, deviendra operateur du channel).
-bool ChannelUtils::isFirstMember(Channel &channel)
+bool Server::isFirstMember(Channel &channel)
 {
     return channel.getMembers().empty();
 }
 
-void ChannelUtils::joinClient(Channel &channel, Client &client)
+void Server::joinClient(Channel &channel, Client &client)
 {
-    bool wasEmpty = ChannelUtils::isFirstMember(channel);
+    bool wasEmpty = isFirstMember(channel);
 
     channel.addMember(&client);
 
@@ -105,7 +104,7 @@ void ChannelUtils::joinClient(Channel &channel, Client &client)
 // Network
 // ============================================================
 
-void ChannelUtils::sendMessage(Client &client, const std::string &message)
+void Server::sendMessage(Client &client, const std::string &message)
 {
     send(
         client.getFd(),
@@ -115,12 +114,12 @@ void ChannelUtils::sendMessage(Client &client, const std::string &message)
     );
 }
 
-void ChannelUtils::broadcast(Channel &channel, const std::string &message)
+void Server::broadcast(Channel &channel, const std::string &message)
 {
     std::vector<Client*> &members = channel.getMembers();
 
     for (size_t i = 0; i < members.size(); i++)
-        ChannelUtils::sendMessage(*members[i], message);
+        Server::sendMessage(*members[i], message);
 }
 
 // ============================================================
@@ -128,32 +127,32 @@ void ChannelUtils::broadcast(Channel &channel, const std::string &message)
 // ============================================================
 
 // ":<nick>!<user>@<host> JOIN <channel>\r\n"
-std::string ChannelUtils::buildJoinReply(Client &client, Channel &channel)
+std::string Server::buildJoinReply(Client &client, Channel &channel)
 {
     return ":" + client.getNickname() + "!" + client.getUsername() +
            "@" + client.getHost() + " JOIN " + channel.getName() + "\r\n";
 }
 
 // RPL_NOTOPIC (331) si aucun topic n'est defini, sinon RPL_TOPIC (332).
-void ChannelUtils::sendTopicReply(Client &client, Channel &channel)
+void Server::sendTopicReply(Client &client, Channel &channel)
 {
     if (channel.getTopic().empty())
     {
         std::string reply = ":ircserv 331 " + client.getNickname() + " " +
                              channel.getName() + " :No topic is set\r\n";
-        ChannelUtils::sendMessage(client, reply);
+        Server::sendMessage(client, reply);
     }
     else
     {
         std::string reply = ":ircserv 332 " + client.getNickname() + " " +
                              channel.getName() + " :" + channel.getTopic() + "\r\n";
-        ChannelUtils::sendMessage(client, reply);
+        Server::sendMessage(client, reply);
     }
 }
 
 // Construit la liste "[prefix]<nick>{ [prefix]<nick>}" utilisee par RPL_NAMREPLY.
 // <prefix> est "@" si le membre est operateur du channel, sinon rien.
-std::string ChannelUtils::buildNamesList(Channel &channel)
+std::string Server::buildNamesList(Channel &channel)
 {
     std::vector<Client*> &members = channel.getMembers();
     std::string list;
@@ -173,14 +172,14 @@ std::string ChannelUtils::buildNamesList(Channel &channel)
 }
 
 // Envoie RPL_NAMREPLY (353) suivi de RPL_ENDOFNAMES (366).
-void ChannelUtils::sendNamesReply(Client &client, Channel &channel)
+void Server::sendNamesReply(Client &client, Channel &channel)
 {
     std::string namesReply = ":ircserv 353 " + client.getNickname() +
                               " = " + channel.getName() + " :" +
-                              ChannelUtils::buildNamesList(channel) + "\r\n";
-    ChannelUtils::sendMessage(client, namesReply);
+                              Server::buildNamesList(channel) + "\r\n";
+    Server::sendMessage(client, namesReply);
 
     std::string endReply = ":ircserv 366 " + client.getNickname() + " " +
                             channel.getName() + " :End of /NAMES list\r\n";
-    ChannelUtils::sendMessage(client, endReply);
+    Server::sendMessage(client, endReply);
 }

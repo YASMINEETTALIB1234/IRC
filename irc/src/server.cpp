@@ -1,4 +1,5 @@
 #include "../include/Server.hpp"
+#include "../include/Channel.hpp"
 
 //serverFd(-1) : Mais avant d'appeler : socket() on ne possède aucun FD.
 Server::Server(int port, const std::string &password)
@@ -841,8 +842,8 @@ void Server::run()
                     }
                     else
                     {
+                        
                         buffer[bytes] = '\0';
-
                         Parser parser;
                         parser.parse(buffer);
 
@@ -853,6 +854,8 @@ void Server::run()
                             handleNick(client, arguments);
                         else if (parser.getCommand() == "USER")
                             handleUser(client, arguments);
+                        else if (parser.getCommand() == "JOIN")
+                           execute(client, arguments);
                         else
                         {
                             std::string reply = ":ircserv 421 " + parser.getCommand() + " :Unknown command\r\n";

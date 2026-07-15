@@ -17,7 +17,7 @@
 
 #include "Client.hpp"
 #include "Channel.hpp"
-#include "../include/Parser.hpp"
+#include "Parser.hpp"
 
 class Server
 {
@@ -52,7 +52,28 @@ public:
     //void receiveMessage(int clientFd);
     std::map<std::string, Channel> &getChannels();
 
+    void joinOneChannel(Client &client,
+                               const std::string &channelName,
+                               const std::string &key);
 
+    void joinManyChannels(Client &client,
+                                 const std::vector<std::string> &arguments);
+
+    void execute(Client &client,
+                        const std::vector<std::string> &arguments);
+        // utils
+    std::vector<std::string> split(const std::string&, char);
+    bool isValidChannelName(const std::string&);
+    Channel *findChannel(const std::string&);
+    Channel *createChannel(const std::string&);
+    bool isFirstMember(Channel&);
+    void joinClient(Channel&, Client&);
+    void sendMessage(Client&, const std::string&);
+    void broadcast(Channel&, const std::string&);
+    std::string buildJoinReply(Client&, Channel&);
+    void sendTopicReply(Client&, Channel&);
+    std::string buildNamesList(Channel&);
+    void sendNamesReply(Client&, Channel&);
 };
 
 #endif
