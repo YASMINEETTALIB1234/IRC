@@ -16,6 +16,7 @@
 #include <cctype>
 
 #include "Client.hpp"
+#include "Channel.hpp"
 #include "../include/Parser.hpp"
 
 class Server
@@ -28,6 +29,7 @@ private:
 
     std::vector<pollfd> pollFds;
     std::map<int, Client> clients;//Une map fonctionne comme un dictionnaire.(cle=FD, valeur=client)
+    std::map<std::string, Channel> channels;
 
 public:
     Server(int port, const std::string &password);
@@ -48,6 +50,9 @@ public:
 
     //void acceptClient();
     //void receiveMessage(int clientFd);
+    std::map<std::string, Channel> &getChannels();
+
+
 };
 
 #endif

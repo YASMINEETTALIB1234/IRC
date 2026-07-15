@@ -489,6 +489,11 @@ std::string Server::getClientName(Client &client)
     return client.getNickname();
 }
 
+std::map<std::string, Channel> &Server::getChannels()
+{
+    return channels;
+}
+
 void Server::handleNick(Client &client, const std::vector<std::string> &arguments)
 {
 
@@ -898,3 +903,4 @@ void Server::run()
         ▼
     Affichage
 */
+
