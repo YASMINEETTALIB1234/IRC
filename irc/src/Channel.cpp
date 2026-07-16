@@ -1,12 +1,14 @@
 #include "../include/Channel.hpp"
 
 Channel::Channel()
+    : topicSetAt_channel(0)
 {
 }
 
 Channel::Channel(const std::string &name)
+    : name_channel(name),
+      topicSetAt_channel(0)
 {
-    name_channel = name;
 }
 
 Channel::~Channel()
@@ -90,4 +92,25 @@ bool Channel::isOperator(Client *client) const
 std::vector<Client*> &Channel::getOperators()
 {
     return operators;
+}
+
+
+const std::string &Channel::getTopicSetBy() const
+{
+    return topicSetBy_channel;
+}
+
+time_t Channel::getTopicSetAt() const
+{
+    return topicSetAt_channel;
+}
+
+void Channel::setTopicSetBy(const std::string &nick)
+{
+    topicSetBy_channel = nick;
+}
+
+void Channel::setTopicSetAt(time_t when)
+{
+    topicSetAt_channel = when;
 }
