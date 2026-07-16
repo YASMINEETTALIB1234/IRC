@@ -35,33 +35,36 @@ public:
     Server(int port, const std::string &password);
     ~Server();
 
+    //server
     void initServer();
     void run();
-
+    
+    //commands server
     void handlePass(Client &client, const std::vector<std::string> &arguments);
     void handleNick(Client &client, const std::vector<std::string> &arguments);
-    bool isValidNickname(const std::string &nickname);
-    std::string getClientName(Client &client);
-
     void handleUser(Client &client, const std::vector<std::string> &arguments);
 
-    bool isRegistered(Client &client);
+    //utils server
     void sendWelcome(Client &client);
+    void sendRPLWelcome(Client &client);
+    void sendRPLYourHost(Client &client);
+    void sendRPLCreated(Client &client);
+    void sendRPLMyInfo(Client &client);
+    bool isValidNickname(const std::string &nickname);
+    std::string getClientName(Client &client);
+    bool isRegistered(Client &client);
 
-    //void acceptClient();
-    //void receiveMessage(int clientFd);
+
     std::map<std::string, Channel> &getChannels();
-
     void joinOneChannel(Client &client,
                                const std::string &channelName,
                                const std::string &key);
-
     void joinManyChannels(Client &client,
                                  const std::vector<std::string> &arguments);
-
     void execute(Client &client,
                         const std::vector<std::string> &arguments);
-        // utils
+
+    // utils
     std::vector<std::string> split(const std::string&, char);
     bool isValidChannelName(const std::string&);
     Channel *findChannel(const std::string&);
