@@ -855,7 +855,9 @@ void Server::run()
                         else if (parser.getCommand() == "USER")
                             handleUser(client, arguments);
                         else if (parser.getCommand() == "JOIN")
-                           execute(client, arguments);
+                            joinCommand(client, arguments);
+                        else if (parser.getCommand() == "TOPIC")
+                            topicCommand(client, arguments);
                         else
                         {
                             std::string reply = ":ircserv 421 " + parser.getCommand() + " :Unknown command\r\n";

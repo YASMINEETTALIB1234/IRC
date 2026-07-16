@@ -5,50 +5,16 @@
 #define MAX_CHANNELS_PER_CLIENT 10
 
 
-void Server::execute(Client &client, const std::vector<std::string> &arguments)
+void Server::joinCommand(Client &client, const std::vector<std::string> &arguments)
 {
-    // Le client doit etre enregistre (PASS + NICK + USER) avant de pouvoir
-    // rejoindre un channel.
-    if (!isRegistered(client))
-    {
-        std::string reply = ":ircserv 451 " + getClientName(client) +
-                             " :You have not registered\r\n";
-        Server::sendMessage(client, reply);
-        return;
-    }
-
     // ERR_NEEDMOREPARAMS (461) : il faut au moins un channel en parametre.
     if (arguments.empty())
     {
         std::string reply = ":ircserv 461 " + getClientName(client) +
                              " JOIN :Not enough parameters\r\n";
-        Server::sendMessage(client, reply);
+        sendMessage(client, reply);
         return;
     }
-
-    // Argument special "0" : quitter tous les channels rejoints.
-    // (le serveur traite cette commande comme si le client avait envoye
-    // un PART pour chaque channel dont il est membre)
-    if (arguments[0] == "0")
-    {
-        // std::vector<Channel*> &joined = client.getChannels();
-
-        // while (!joined.empty())
-        // {
-        //     Channel *channel = joined[0];
-
-        //     std::string partMsg = ":" + client.getNickname() + "!" +
-        //                         client.getUsername() + "@" +
-        //                         client.getHost() + " PART " +
-        //                         channel->getName() + " :Leaving\r\n";
-
-        //     ChannelUtils::broadcast(*channel, partMsg);
-        //     ChannelUtils::leaveClient(server, *channel, client);
-        // }
-
-        return;
-    }
-
     joinManyChannels(client, arguments);
 }
 
@@ -116,7 +82,7 @@ void Server::joinOneChannel(Client &client, const std::string &channelName, cons
 
     // 1. Message JOIN, envoye a tous les membres du channel (client inclus,
     //    puisqu'il vient d'y etre ajoute).
-    std::string joinMsg = buildJoinReply(client, *channel);
+    std::string joinMsg = buildCommandReply(client, "JOIN", channel->getName(), "");
     broadcast(*channel, joinMsg);
 
     // 2. Topic du channel (RPL_NOTOPIC ou RPL_TOPIC).

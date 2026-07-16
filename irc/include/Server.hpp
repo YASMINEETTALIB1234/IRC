@@ -59,7 +59,7 @@ public:
     void joinManyChannels(Client &client,
                                  const std::vector<std::string> &arguments);
 
-    void execute(Client &client,
+    void joinCommand(Client &client,
                         const std::vector<std::string> &arguments);
         // utils
     std::vector<std::string> split(const std::string&, char);
@@ -70,10 +70,18 @@ public:
     void joinClient(Channel&, Client&);
     void sendMessage(Client&, const std::string&);
     void broadcast(Channel&, const std::string&);
-    std::string buildJoinReply(Client&, Channel&);
     void sendTopicReply(Client&, Channel&);
     std::string buildNamesList(Channel&);
     void sendNamesReply(Client&, Channel&);
+
+//topic
+    void topicCommand(Client &client, const std::vector<std::string> &arguments);
+
+
+    std::string buildCommandReply(Client &client,
+                                      const std::string &command,
+                                      const std::string &target,
+                                      const std::string &trailing);
 };
 
 #endif

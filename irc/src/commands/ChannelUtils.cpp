@@ -122,35 +122,11 @@ void Server::broadcast(Channel &channel, const std::string &message)
         Server::sendMessage(*members[i], message);
 }
 
-// ============================================================
-// IRC Replies
-// ============================================================
-
-// ":<nick>!<user>@<host> JOIN <channel>\r\n"
-std::string Server::buildJoinReply(Client &client, Channel &channel)
-{
-    return ":" + client.getNickname() + "!" + client.getUsername() +
-           "@" + client.getHost() + " JOIN " + channel.getName() + "\r\n";
-}
 
 // RPL_NOTOPIC (331) si aucun topic n'est defini, sinon RPL_TOPIC (332).
-void Server::sendTopicReply(Client &client, Channel &channel)
-{
-    if (channel.getTopic().empty())
-    {
-        std::string reply = ":ircserv 331 " + client.getNickname() + " " +
-                             channel.getName() + " :No topic is set\r\n";
-        Server::sendMessage(client, reply);
-    }
-    else
-    {
-        std::string reply = ":ircserv 332 " + client.getNickname() + " " +
-                             channel.getName() + " :" + channel.getTopic() + "\r\n";
-        Server::sendMessage(client, reply);
-    }
-}
 
 // Construit la liste "[prefix]<nick>{ [prefix]<nick>}" utilisee par RPL_NAMREPLY.
+
 // <prefix> est "@" si le membre est operateur du channel, sinon rien.
 std::string Server::buildNamesList(Channel &channel)
 {
@@ -182,4 +158,51 @@ void Server::sendNamesReply(Client &client, Channel &channel)
     std::string endReply = ":ircserv 366 " + client.getNickname() + " " +
                             channel.getName() + " :End of /NAMES list\r\n";
     Server::sendMessage(client, endReply);
+}
+
+void Server::sendTopicReply(Client &client, Channel &channel)
+{
+    if (channel.getTopic().empty())
+    {
+        std::string reply = ":ircserv 331 " + client.getNickname() + " " +
+                             channel.getName() + " :No topic is set\r\n";
+        sendMessage(client, reply);
+    }
+    else
+    {
+        std::string reply = ":ircserv 332 " + client.getNickname() + " " +
+                             channel.getName() + " :" + channel.getTopic() + "\r\n";
+        sendMessage(client, reply);
+
+        // RPL_TOPICWHOTIME (333), seulement si le topic a ete pose via TOPIC
+        // (donc que les metadonnees who/when existent).
+        if (!channel.getTopicSetBy().empty())
+        {
+            std::ostringstream oss;
+            oss << channel.getTopicSetAt();
+
+            std::string whoTime = ":ircserv 333 " + client.getNickname() + " " +
+                                   channel.getName() + " " + channel.getTopicSetBy() +
+                                   " " + oss.str() + "\r\n";
+            sendMessage(client, whoTime);
+        }
+    }
+}
+
+std::string Server::buildCommandReply(Client &client,
+                                      const std::string &command,
+                                      const std::string &target,
+                                      const std::string &trailing)
+{
+    std::string reply = ":" + client.getNickname() + "!" +
+                        client.getUsername() + "@" +
+                        client.getHost() + " " +
+                        command + " " + target;
+
+    if (!trailing.empty())
+        reply += " :" + trailing;
+
+    reply += "\r\n";
+
+    return reply;
 }

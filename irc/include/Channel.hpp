@@ -14,7 +14,10 @@ private:
 
     std::vector<Client*> members_channel;
 
-    std::vector<Client*> operators; 
+    std::vector<Client*> operators;
+
+    std::string topicSetBy_channel;   // nick de qui a defini le topic actuel
+    time_t      topicSetAt_channel;   // timestamp unix de la derniere modification
 
 public:
     Channel();
@@ -34,13 +37,16 @@ public:
     void addOperator(Client *client);//Ajouter un opérateur
 
 
-    const std::string &getTopic() const;
-
-//apres
     bool isOperator(Client *client) const;//Vérifier si quelqu'un est opérateur (dans topic ,mode..)
-    void setTopic(const std::string &topic);
     std::vector<Client*> &getOperators();
 
+    //topic
+    const std::string &getTopic() const;
+    void setTopic(const std::string &topic);
+    const std::string &getTopicSetBy() const;
+    time_t getTopicSetAt() const;
+    void setTopicSetBy(const std::string &nick);
+    void setTopicSetAt(time_t when);
 };
 
 #endif
