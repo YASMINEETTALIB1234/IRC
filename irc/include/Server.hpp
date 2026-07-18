@@ -77,9 +77,16 @@ public:
     void sendTopicReply(Client&, Channel&);
     std::string buildNamesList(Channel&);
     void sendNamesReply(Client&, Channel&);
+    //
+    Client *findClientInChannel(Channel &channel, const std::string &nick);
+    void sendChannelModeIs(Client &client, Channel &channel);
+    Client *findClientByNickname(const std::string &nick);
+    void inviteCommand(Client &client, const std::vector<std::string> &arguments);
 
 //topic
     void topicCommand(Client &client, const std::vector<std::string> &arguments);
+//mode
+    void modeCommand(Client &client, const std::vector<std::string> &arguments);
 
 
     std::string buildCommandReply(Client &client,

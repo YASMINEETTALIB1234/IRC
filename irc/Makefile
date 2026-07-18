@@ -23,7 +23,8 @@ SRC         =  \
 	src/Parser.cpp \
 	src/commands/JoinCommand.cpp \
 	src/commands/ChannelUtils.cpp \
-	src/commands/TopicCommand.cpp
+	src/commands/TopicCommand.cpp \
+	src/commands/ModeCommand.cpp
 
 OBJ         = $(SRC:.cpp=.o)
 

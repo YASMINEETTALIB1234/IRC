@@ -97,6 +97,10 @@ void Server::run()
                             joinCommand(client, arguments);
                         else if (parser.getCommand() == "TOPIC")
                             topicCommand(client, arguments);
+                        else if (parser.getCommand() == "MODE")
+                            modeCommand(client, arguments);
+                        else if (parser.getCommand() == "INVITE")
+                            inviteCommand(client, arguments);
                         else
                         {
                             std::string reply = ":ircserv 421 " + parser.getCommand() + " :Unknown command\r\n";
