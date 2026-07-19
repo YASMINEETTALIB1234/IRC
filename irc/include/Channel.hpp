@@ -19,6 +19,16 @@ private:
     std::string topicSetBy_channel;   // nick de qui a defini le topic actuel
     time_t      topicSetAt_channel;   // timestamp unix de la derniere modification
 
+    //mode
+    bool inviteOnly_channel;
+    bool topicRestricted_channel;
+    bool hasKey_channel;
+    std::string key_channel;
+    size_t userLimit_channel;
+    bool hasLimit_channel;
+    std::vector<std::string> invitedNicks_channel;
+
+
 public:
     Channel();
     Channel(const std::string &name); //Creer un channel si n'existe pas
@@ -47,6 +57,38 @@ public:
     time_t getTopicSetAt() const;
     void setTopicSetBy(const std::string &nick);
     void setTopicSetAt(time_t when);
+    //mode
+    // mode i
+    bool isInviteOnly() const;
+    void setInviteOnly(bool value);
+    // mode t
+    bool isTopicRestricted() const;
+    void setTopicRestricted(bool value);
+
+    // mode k
+    bool hasKey() const;
+    const std::string &getKey() const;
+    void setKey(const std::string &key);
+    void removeKey();
+
+    // mode l
+    bool hasUserLimit() const;
+    size_t getUserLimit() const;
+    void setUserLimit(size_t limit);
+    void removeUserLimit();
+
+    // mode o (separate from removeMember, which also strips op status)
+    void removeOperator(Client *client);
+
+    // invite list, used by INVITE and checked by JOIN when +i
+    void addInvite(const std::string &nick);
+    bool isInvited(const std::string &nick) const;
+    void removeInvite(const std::string &nick);
+
+    // for RPL_CHANNELMODEIS (324)
+    std::string getModeString() const;
+
+    
 };
 
 #endif

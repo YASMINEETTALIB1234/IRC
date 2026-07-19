@@ -187,3 +187,13 @@ void Server::broadcast(Channel &channel,
         sendMessage(*members[i], message);
     }
 }
+
+Client *Server::findClientByNickname(const std::string &nick)
+{
+    for (std::map<int, Client>::iterator it = clients.begin(); it != clients.end(); ++it)
+    {
+        if (it->second.getNickname() == nick)
+            return &(it->second);
+    }
+    return NULL;
+}
