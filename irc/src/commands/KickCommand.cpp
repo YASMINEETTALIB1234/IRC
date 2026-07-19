@@ -63,7 +63,7 @@ void Server::kickCommand(Client &client, const std::vector<std::string> &argumen
         std::string kickMsg = ":" + client.getNickname() + "!" + client.getUsername() + "@" +
                                client.getHost() + " KICK " + channelName + " " +
                                targetNick + " :" + reason + "\r\n";
-        broadcast(*channel, kickMsg);
+        broadcast(*channel, kickMsg,NULL);
 
         // actually remove them from the channel (and strip op status if they had it)
         channel->removeMember(targetClient);

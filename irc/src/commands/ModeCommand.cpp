@@ -187,6 +187,6 @@ void Server::modeCommand(Client &client, const std::vector<std::string> &argumen
         std::string fullMessage = ":" + client.getNickname() + "!" +
                                    client.getUsername() + "@" + client.getHost() +
                                    " MODE " + channel->getName() + " " + appliedModes + appliedParams + "\r\n";
-        broadcast(*channel, fullMessage);
+        broadcast(*channel, fullMessage,NULL);
     }
 }
