@@ -67,17 +67,12 @@ void Server::run()
                         sizeof(buffer) - 1,
                         0
                     );
-
                     if (bytes <= 0)
                     {
-                        close(pollFds[i].fd);
-                        clients.erase(pollFds[i].fd);
+                        disconnectClient(client, "Connection closed");   // handles channels/broadcast/fd close/erase
                         pollFds.erase(pollFds.begin() + i);
-
-                        std::cout << "Client disconnected."
-                                  << std::endl;
-
                         i--;
+                        std::cout << "Client disconnected." << std::endl;
                     }
                     else
                     {
@@ -101,6 +96,10 @@ void Server::run()
                             modeCommand(client, arguments);
                         else if (parser.getCommand() == "INVITE")
                             inviteCommand(client, arguments);
+                        else if (parser.getCommand() == "KICK")
+                            kickCommand(client, arguments);
+                        else if (parser.getCommand() == "QUIT")
+                            quitCommand(client, arguments);
                         else
                         {
                             std::string reply = ":ircserv 421 " + parser.getCommand() + " :Unknown command\r\n";
@@ -110,6 +109,16 @@ void Server::run()
                                 reply.length(),
                                 0
                             );
+                        }
+                        // If the handler we just called disconnected this client
+                        // (currently only quitCommand -> disconnectClient does this),
+                        // the fd was already closed and erased from `clients`.
+                        // We must also drop it from pollFds so poll() doesn't
+                        // watch a dead fd on the next iteration.
+                        if (clients.find(pollFds[i].fd) == clients.end())
+                        {
+                            pollFds.erase(pollFds.begin() + i);
+                            i--;
                         }
                     }
                 }

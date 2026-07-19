@@ -24,7 +24,11 @@ SRC         =  \
 	src/commands/JoinCommand.cpp \
 	src/commands/ChannelUtils.cpp \
 	src/commands/TopicCommand.cpp \
-	src/commands/ModeCommand.cpp
+	src/commands/ModeCommand.cpp \
+	src/commands/InviteCommand.cpp \
+	src/commands/KickCommand.cpp \
+	src/commands/QuitCommand.cpp
+
 
 OBJ         = $(SRC:.cpp=.o)
 

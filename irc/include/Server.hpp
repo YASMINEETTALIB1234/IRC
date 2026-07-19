@@ -80,13 +80,20 @@ public:
     //
     Client *findClientInChannel(Channel &channel, const std::string &nick);
     void sendChannelModeIs(Client &client, Channel &channel);
+    
+    //invite
     Client *findClientByNickname(const std::string &nick);
     void inviteCommand(Client &client, const std::vector<std::string> &arguments);
 
 //topic
     void topicCommand(Client &client, const std::vector<std::string> &arguments);
-//mode
+    //mode
     void modeCommand(Client &client, const std::vector<std::string> &arguments);
+    //kick
+    void kickCommand(Client &client, const std::vector<std::string> &arguments);
+    //quit
+    void quitCommand(Client &client, const std::vector<std::string> &arguments);
+    void disconnectClient(Client &client, const std::string &reason);
 
 
     std::string buildCommandReply(Client &client,

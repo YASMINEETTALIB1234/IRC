@@ -206,3 +206,13 @@ std::string Server::buildCommandReply(Client &client,
 
     return reply;
 }
+
+Client *Server::findClientByNickname(const std::string &nick)
+{
+    for (std::map<int, Client>::iterator it = clients.begin(); it != clients.end(); ++it)
+    {
+        if (it->second.getNickname() == nick)
+            return &(it->second);
+    }
+    return NULL;
+}
