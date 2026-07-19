@@ -79,15 +79,8 @@ void Server::joinOneChannel(Client &client, const std::string &channelName, cons
         return;
 
     joinClient(*channel, client);
-
-    // 1. Message JOIN, envoye a tous les membres du channel (client inclus,
-    //    puisqu'il vient d'y etre ajoute).
     std::string joinMsg = buildCommandReply(client, "JOIN", channel->getName(), "");
-    broadcast(*channel, joinMsg);
-
-    // 2. Topic du channel (RPL_NOTOPIC ou RPL_TOPIC).
+    broadcast(*channel,joinMsg,NULL);
     sendTopicReply(client, *channel);
-
-    // 3. Liste des membres du channel (RPL_NAMREPLY + RPL_ENDOFNAMES).
     sendNamesReply(client, *channel);
 }

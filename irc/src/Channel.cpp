@@ -7,7 +7,7 @@ Channel::Channel()
 
 Channel::Channel(const std::string &name)
     : name_channel(name),
-      topicSetAt_channel(0)
+      topicSetAt_channel(0)//time_t est un type fondamental val indetermine il faut initialise alors que std:string et les autres attributs automatiquement on leur constructeur par defaut et appelle
 {
 }
 

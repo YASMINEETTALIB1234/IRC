@@ -1,11 +1,8 @@
 #include "../../include/Server.hpp"
 #include <ctime>
 
-//     Command: TOPIC
-//  Parameters: <channel> [<topic>]
 void Server::topicCommand(Client &client, const std::vector<std::string> &arguments)
 {
-    // ERR_NEEDMOREPARAMS (461)
     if (arguments.empty())
     {
         std::string reply = ":ircserv 461 " + getClientName(client) +
@@ -25,11 +22,7 @@ void Server::topicCommand(Client &client, const std::vector<std::string> &argume
         sendMessage(client, reply);
         return;
     }
-
-    // ERR_NOTONCHANNEL (442) : la reference l'autorise (MAY) pour la
-    // consultation ; applique aussi a la modification (comportement
-    // standard des ircd : impossible de changer le topic d'un channel
-    // auquel on n'a pas rejoint).
+    //client non membre de channel (442)
     if (!channel->hasMember(&client))
     {
         std::string reply = ":ircserv 442 " + getClientName(client) + " " +
@@ -38,7 +31,7 @@ void Server::topicCommand(Client &client, const std::vector<std::string> &argume
         return;
     }
 
-    // --- Cas 1 : consultation (pas de parametre <topic>) ---
+    // --- Cas 1 : consultation (TOPIC name_channel sans arguments :...)
     if (arguments.size() < 2)
     {
         sendTopicReply(client, *channel);
@@ -60,6 +53,6 @@ void Server::topicCommand(Client &client, const std::vector<std::string> &argume
 
     // Diffuse a TOUS les membres, auteur du changement inclus.
     std::string topicMsg = buildCommandReply(client, "TOPIC", channel->getName(), channel->getTopic());
-    broadcast(*channel, topicMsg);
+    broadcast(*channel, topicMsg, NULL);
 }
 

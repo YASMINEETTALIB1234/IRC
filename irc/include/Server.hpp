@@ -73,7 +73,7 @@ public:
     bool isFirstMember(Channel&);
     void joinClient(Channel&, Client&);
     void sendMessage(Client&, const std::string&);
-    void broadcast(Channel&, const std::string&);
+    void broadcast(Channel &channel,const std::string &message,Client *exclude);
     void sendTopicReply(Client&, Channel&);
     std::string buildNamesList(Channel&);
     void sendNamesReply(Client&, Channel&);
@@ -85,7 +85,35 @@ public:
     std::string buildCommandReply(Client &client,
                                       const std::string &command,
                                       const std::string &target,
-                                      const std::string &trailing);
+                                      const std::string &text);
+
+
+// PRIVMSG
+void privmsgCommand(Client &client,
+                    const std::vector<std::string> &arguments);
+
+void privmsgManyTargets(Client &client,
+                        const std::vector<std::string> &targets,
+                        const std::string &message);
+
+void privmsgOneTarget(Client &client,
+                      const std::string &target,
+                      const std::string &message);
+
+Client *findClient(const std::string &nickname);
+
+// PART
+void partCommand(Client &client,
+                 const std::vector<std::string> &arguments);
+
+void partManyChannels(Client &client,
+                      const std::vector<std::string> &channels,
+                      const std::string &reason);
+
+void partOneChannel(Client &client,
+                    const std::string &channelName,
+                    const std::string &reason);
+
 };
 
 #endif
