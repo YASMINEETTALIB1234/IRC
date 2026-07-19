@@ -38,11 +38,6 @@ void Server::joinManyChannels(Client &client, const std::vector<std::string> &ar
 
 void Server::joinOneChannel(Client &client, const std::string &channelName, const std::string &key)
 {
-    (void)key; // Les modes de channel (+k, +i, +l, +b) ne sont pas encore
-               // implementes cote Channel ; ce parametre est conserve pour
-               // pouvoir brancher ERR_BADCHANNELKEY / ERR_INVITEONLYCHAN /
-               // ERR_BANNEDFROMCHAN / ERR_CHANNELISFULL plus tard.
-
     // ERR_BADCHANMASK (476) : nom de channel syntaxiquement invalide.
     if (!isValidChannelName(channelName))
     {
@@ -76,6 +71,8 @@ void Server::joinOneChannel(Client &client, const std::string &channelName, cons
 
     // Un client deja membre du channel n'a rien de plus a faire.
     if (channel->hasMember(&client))
+        return;
+    if (!canJoinChannel(client,*channel,key))
         return;
 
     joinClient(*channel, client);

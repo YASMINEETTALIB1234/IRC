@@ -90,10 +90,6 @@ void Server::privmsgOneTarget(Client &client,
             return;
         }
 
-        // 404
-        // Plus tard :
-        // vérifier +m, +b, etc.
-
         std::string reply =
             buildCommandReply(client,"PRIVMSG",target,message);
 

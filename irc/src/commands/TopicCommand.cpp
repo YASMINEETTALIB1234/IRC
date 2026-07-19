@@ -39,11 +39,16 @@ void Server::topicCommand(Client &client, const std::vector<std::string> &argume
     }
 
     // --- Cas 2 : modification (ou effacement si <topic> est vide) ---
-    //
-    // TODO: si le mode "protected topic" (+t) est defini sur le channel,
-    // verifier ici channel->isOperator(&client), sinon ERR_CHANOPRIVSNEEDED
-    // (482). Pas encore applicable : MODE n'existe pas, donc aucun channel
-    // ne peut etre +t pour l'instant.
+
+    // ERR_CHANOPRIVSNEEDED (482)
+    // Si le channel est en mode +t, seul un opérateur peut modifier le topic.
+    if (channel->isTopicRestricted() && !channel->isOperator(&client))
+    {
+        std::string reply = ":ircserv 482 " + getClientName(client) + " " +
+                            channelName + " :You're not channel operator\r\n";
+        sendMessage(client, reply);
+        return;
+    }
 
     std::string newTopic = arguments[1];
 

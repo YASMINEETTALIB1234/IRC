@@ -128,6 +128,10 @@ void partOneChannel(Client &client,
                     const std::string &channelName,
                     const std::string &reason);
 
+bool canJoinChannel(Client &client,
+                            Channel &channel,
+                            const std::string &key);
+
 };
 
 #endif

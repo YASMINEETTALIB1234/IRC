@@ -197,3 +197,58 @@ Client *Server::findClientByNickname(const std::string &nick)
     }
     return NULL;
 }
+
+bool Server::canJoinChannel(Client &client,
+                            Channel &channel,
+                            const std::string &key)
+{
+    // ERR_INVITEONLYCHAN (473)
+    if (channel.isInviteOnly())
+    {
+        if (!channel.isInvited(client.getNickname()))
+        {
+            sendMessage(client,
+                ":ircserv 473 " +
+                getClientName(client) +
+                " " +
+                channel.getName() +
+                " :Cannot join channel (+i)\r\n");
+            return false;
+        }
+
+        // Consommer l'invitation
+        channel.removeInvite(client.getNickname());
+    }
+
+    // ERR_BADCHANNELKEY (475)
+    if (channel.hasKey())
+    {
+        if (key != channel.getKey())
+        {
+            sendMessage(client,
+                ":ircserv 475 " +
+                getClientName(client) +
+                " " +
+                channel.getName() +
+                " :Cannot join channel (+k)\r\n");
+            return false;
+        }
+    }
+
+    // ERR_CHANNELISFULL (471)
+    if (channel.hasUserLimit())
+    {
+        if (channel.getMembers().size() >= channel.getUserLimit())
+        {
+            sendMessage(client,
+                ":ircserv 471 " +
+                getClientName(client) +
+                " " +
+                channel.getName() +
+                " :Cannot join channel (+l)\r\n");
+            return false;
+        }
+    }
+
+    return true;
+}
